@@ -46,31 +46,33 @@ const lilleLungegardsvannOutline = {
 const replayButton = document.getElementById("replay-flight");
 const statusElement = document.getElementById("flight-status");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const rasterBaseStyle = {
+const satelliteBaseStyle = {
     version: 8,
     sources: {
-        "osm-raster-tiles": {
+        "satellite-tiles": {
             type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tiles: [
+                "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg"
+            ],
             tileSize: 256,
             minzoom: 0,
-            maxzoom: 19,
-            attribution: "&copy; OpenStreetMap contributors"
+            maxzoom: 18,
+            attribution: "Imagery: Sentinel-2 cloudless by EOX, Contains modified Copernicus Sentinel data 2020"
         }
     },
     layers: [
         {
-            id: "osm-raster-base",
+            id: "satellite-base",
             type: "raster",
-            source: "osm-raster-tiles"
+            source: "satellite-tiles"
         }
     ],
-    id: "osm-raster-style"
+    id: "satellite-style"
 };
 
 const map = new maplibregl.Map({
     container: "map",
-    style: rasterBaseStyle,
+    style: satelliteBaseStyle,
     center: overviewCamera.center,
     zoom: overviewCamera.zoom,
     pitch: overviewCamera.pitch,
@@ -144,9 +146,9 @@ function addLakeLayers() {
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                8, 0.08,
-                12, 0.2,
-                15, 0.34
+                8, 0.06,
+                12, 0.16,
+                15, 0.24
             ]
         }
     });

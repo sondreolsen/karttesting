@@ -27,7 +27,7 @@ http://localhost:4173/
 
 Repoet er klargjort for GitHub Pages som en statisk side.
 
-Kartet bruker na et enklere rasteroppsett direkte mot `tile.openstreetmap.org`, i stedet for en mer sammensatt ekstern OpenMapTiles-stilkjede. Det gir faerre feilpunkter pa GitHub Pages.
+Kartet bruker na satellittbilder via MapLibre med Sentinel-2 cloudless-fliser fra EOX. Det gir satellittvisning uten egen API-nokkel, men er best egnet for personlig eller ikke-kommersiell bruk.
 
 Hvis Pages ikke allerede er aktivert i GitHub:
 
@@ -46,5 +46,5 @@ https://sondreolsen.github.io/karttesting/
 ## Teknologi
 
 - MapLibre GL JS
-- OpenStreetMap raster tiles
+- Sentinel-2 cloudless by EOX
 - vanlig HTML, CSS og JavaScript
