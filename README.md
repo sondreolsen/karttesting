@@ -27,6 +27,8 @@ http://localhost:4173/
 
 Repoet er klargjort for GitHub Pages som en statisk side.
 
+Kartet bruker na et enklere rasteroppsett direkte mot `tile.openstreetmap.org`, i stedet for en mer sammensatt ekstern OpenMapTiles-stilkjede. Det gir faerre feilpunkter pa GitHub Pages.
+
 Hvis Pages ikke allerede er aktivert i GitHub:
 
 1. Gaa til repository `Settings`
@@ -44,5 +46,5 @@ https://sondreolsen.github.io/karttesting/
 ## Teknologi
 
 - MapLibre GL JS
-- offentlig OpenMapTiles-stil
+- OpenStreetMap raster tiles
 - vanlig HTML, CSS og JavaScript

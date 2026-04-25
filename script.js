@@ -46,10 +46,31 @@ const lilleLungegardsvannOutline = {
 const replayButton = document.getElementById("replay-flight");
 const statusElement = document.getElementById("flight-status");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rasterBaseStyle = {
+    version: 8,
+    sources: {
+        "osm-raster-tiles": {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            minzoom: 0,
+            maxzoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }
+    },
+    layers: [
+        {
+            id: "osm-raster-base",
+            type: "raster",
+            source: "osm-raster-tiles"
+        }
+    ],
+    id: "osm-raster-style"
+};
 
 const map = new maplibregl.Map({
     container: "map",
-    style: "https://openmaptiles.github.io/osm-bright-gl-style/style-cdn.json",
+    style: rasterBaseStyle,
     center: overviewCamera.center,
     zoom: overviewCamera.zoom,
     pitch: overviewCamera.pitch,
@@ -223,7 +244,7 @@ map.on("error", (event) => {
 
     if (window.location.protocol === "file:") {
         hasShownLoadError = true;
-        setStatus("Kartdata ble blokkert i file://. Aapne via localhost.");
+        setStatus("Kartdata blir ofte blokkert i file://. Aapne via localhost.");
         return;
     }
 
