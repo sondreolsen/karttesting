@@ -43,9 +43,58 @@ const lilleLungegardsvannOutline = {
     }
 };
 
+const flightPathFeature = {
+    type: "Feature",
+    properties: {},
+    geometry: {
+        type: "LineString",
+        coordinates: [
+            [4.42, 60.88],
+            [4.82, 60.69],
+            [5.12, 60.47],
+            lilleLungegardsvannCenter
+        ]
+    }
+};
+
 const replayButton = document.getElementById("replay-flight");
 const statusElement = document.getElementById("flight-status");
+const storyCaptionElement = document.getElementById("story-caption");
+const locationCardElement = document.getElementById("location-card");
+const chapterElements = Array.from(document.querySelectorAll(".chapter-step"));
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const narrativePhases = {
+    overview: {
+        status: "Viser Vestlandet ...",
+        caption: "Kameraet aapner bredt over Vestlandet for innflygingen starter.",
+        chapter: "overview",
+        locationVisible: false,
+        pathOpacity: 0.68
+    },
+    bergen: {
+        status: "Flyr inn mot Bergen ...",
+        caption: "Fortellingen smalner inn og leder blikket mot Bergen.",
+        chapter: "bergen",
+        locationVisible: false,
+        pathOpacity: 0.62
+    },
+    focus: {
+        status: "Lander ved Lille Lungegaardsvann ...",
+        caption: "Den siste bevegelsen snevrer inn mot vannspeilet midt i sentrum.",
+        chapter: "focus",
+        locationVisible: false,
+        pathOpacity: 0.36
+    },
+    landed: {
+        status: "Lille Lungegaardsvann markert",
+        caption: "Landingspunktet er vannspeilet i hjertet av Bergen sentrum.",
+        chapter: "focus",
+        locationVisible: true,
+        pathOpacity: 0.18
+    }
+};
+
 const satelliteBaseStyle = {
     version: 8,
     sources: {
@@ -112,9 +161,27 @@ function setStatus(message) {
     statusElement.textContent = message;
 }
 
+function setNarrativePhase(phaseKey) {
+    const phase = narrativePhases[phaseKey];
+    if (!phase) {
+        return;
+    }
+
+    setStatus(phase.status);
+    storyCaptionElement.textContent = phase.caption;
+
+    chapterElements.forEach((element) => {
+        element.classList.toggle("is-active", element.dataset.phase === phase.chapter);
+    });
+
+    locationCardElement.classList.toggle("is-visible", phase.locationVisible);
+    setFlightPathOpacity(phase.pathOpacity);
+}
+
 function hideHighlight() {
     markerElement.classList.remove("is-visible");
     lakePopup.remove();
+    locationCardElement.classList.remove("is-visible");
 }
 
 function showHighlight() {
@@ -124,6 +191,70 @@ function showHighlight() {
 
     markerElement.classList.add("is-visible");
     lakePopup.addTo(map);
+}
+
+function addFlightLayers() {
+    if (map.getSource("story-flight-path")) {
+        return;
+    }
+
+    map.addSource("story-flight-path", {
+        type: "geojson",
+        data: flightPathFeature
+    });
+
+    map.addLayer({
+        id: "story-flight-path-glow",
+        type: "line",
+        source: "story-flight-path",
+        layout: {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        paint: {
+            "line-color": "#8fe1ff",
+            "line-width": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                6, 3,
+                12, 8
+            ],
+            "line-blur": 1.2,
+            "line-opacity": 0.2
+        }
+    });
+
+    map.addLayer({
+        id: "story-flight-path-line",
+        type: "line",
+        source: "story-flight-path",
+        layout: {
+            "line-cap": "round",
+            "line-join": "round"
+        },
+        paint: {
+            "line-color": "#f2fbff",
+            "line-width": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                6, 1.6,
+                12, 3.1
+            ],
+            "line-dasharray": [2, 1.8],
+            "line-opacity": 0.54
+        }
+    });
+}
+
+function setFlightPathOpacity(opacity) {
+    if (!map.getLayer("story-flight-path-line")) {
+        return;
+    }
+
+    map.setPaintProperty("story-flight-path-line", "line-opacity", opacity);
+    map.setPaintProperty("story-flight-path-glow", "line-opacity", Math.min(opacity * 0.45, 0.24));
 }
 
 function addLakeLayers() {
@@ -146,9 +277,9 @@ function addLakeLayers() {
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                8, 0.06,
-                12, 0.16,
-                15, 0.24
+                8, 0.08,
+                12, 0.2,
+                15, 0.3
             ]
         }
     });
@@ -163,16 +294,16 @@ function addLakeLayers() {
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                8, 1.1,
-                14, 3
+                8, 1.2,
+                14, 3.2
             ],
             "line-opacity": [
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                8, 0.22,
-                12, 0.66,
-                15, 0.92
+                8, 0.28,
+                12, 0.7,
+                15, 0.95
             ]
         }
     });
@@ -187,7 +318,7 @@ function runFlightSequence() {
     window.clearTimeout(preFlightTimeoutId);
     map.stop();
     hideHighlight();
-    setStatus("Viser Vestlandet ...");
+    setNarrativePhase("overview");
     map.jumpTo(overviewCamera);
 
     preFlightTimeoutId = window.setTimeout(() => {
@@ -195,7 +326,7 @@ function runFlightSequence() {
             return;
         }
 
-        setStatus("Flyr inn mot Bergen ...");
+        setNarrativePhase("bergen");
         map.flyTo({
             ...bergenApproachCamera,
             duration: approachDuration,
@@ -209,7 +340,7 @@ function runFlightSequence() {
                 return;
             }
 
-            setStatus("Lander ved Lille Lungeg\u00e5rdsvann ...");
+            setNarrativePhase("focus");
             map.easeTo({
                 ...bergenLandingCamera,
                 duration: landingDuration,
@@ -223,15 +354,16 @@ function runFlightSequence() {
                 }
 
                 showHighlight();
-                setStatus("Lille Lungeg\u00e5rdsvann markert");
+                setNarrativePhase("landed");
             });
         });
     }, pauseBeforeTakeoff);
 }
 
 map.on("load", () => {
+    addFlightLayers();
     addLakeLayers();
-    setStatus("Kartet er klart");
+    setNarrativePhase("overview");
     runFlightSequence();
 });
 
