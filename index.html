@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vestlandet til Bergen</title>
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.17.0/dist/maplibre-gl.css">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div id="map" aria-label="Kart over Vestlandet og Bergen"></div>
+
+    <div class="story-shell">
+        <div class="story-card">
+            <p class="eyebrow">Kartprototype</p>
+            <h1>Fra Vestlandet til Lille Lungeg&aring;rdsvann</h1>
+            <p class="lede">
+                Et oversiktskart &aring;pner p&aring; Vestlandet og flyr deretter inn til Bergen,
+                f&oslash;r turen lander ved Lille Lungeg&aring;rdsvann.
+            </p>
+            <div class="story-actions">
+                <button id="replay-flight" type="button">Spill av innflygingen</button>
+                <p id="flight-status" class="status-pill" aria-live="polite">Laster kartet ...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-note">
+        Basert p&aring; MapLibre GL JS og en offentlig OpenMapTiles-stil.
+        Hvis kartet ser tomt ut i `file://`-visning, &aring;pne siden via localhost i stedet.
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@5.17.0/dist/maplibre-gl.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>
