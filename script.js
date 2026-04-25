@@ -1,98 +1,80 @@
-const overviewCamera = {
-    center: [5.1, 60.55],
-    zoom: 6.2,
-    pitch: 34,
-    bearing: -10
-};
-
-const bergenApproachCamera = {
-    center: [5.15, 60.42],
-    zoom: 9.6,
-    pitch: 48,
-    bearing: -18
-};
-
-const bergenLandingCamera = {
+const bergenCamera = {
     center: [5.3318, 60.3898],
-    zoom: 14.35,
-    pitch: 58,
-    bearing: -12
+    zoom: 12.4,
+    pitch: 54,
+    bearing: -14
 };
 
-const lilleLungegardsvannCenter = [5.3318, 60.3898];
-
-const lilleLungegardsvannOutline = {
-    type: "Feature",
-    properties: {
-        name: "Lille Lungegardsvann"
+const fixtures = [
+    {
+        id: "villa",
+        round: "35. runde",
+        matchLabel: "Aston Villa - Tottenham",
+        stadium: "Villa Park",
+        dateLabel: "S\u00f8ndag 3. mai 2026",
+        timeLabel: "20:00",
+        stadiumCopy: "Tottenhams tur til Birmingham avslutter den nest siste bortereisen i serien.",
+        venue: [-1.8849, 52.5092],
+        camera: {
+            center: [-1.8849, 52.5092],
+            zoom: 14.45,
+            pitch: 57,
+            bearing: -24
+        }
     },
-    geometry: {
-        type: "Polygon",
-        coordinates: [[
-            [5.3297, 60.3894],
-            [5.3302, 60.3910],
-            [5.3318, 60.3918],
-            [5.3341, 60.3914],
-            [5.3354, 60.3900],
-            [5.3350, 60.3882],
-            [5.3334, 60.3872],
-            [5.3312, 60.3875],
-            [5.3299, 60.3886],
-            [5.3297, 60.3894]
-        ]]
+    {
+        id: "leeds",
+        round: "36. runde",
+        matchLabel: "Tottenham - Leeds United",
+        stadium: "Tottenham Hotspur Stadium",
+        dateLabel: "Mandag 11. mai 2026",
+        timeLabel: "21:00",
+        stadiumCopy: "F\u00f8rste hjemmekamp i innspurten spilles i nordlige London.",
+        venue: [-0.0664, 51.6042],
+        camera: {
+            center: [-0.0664, 51.6042],
+            zoom: 15.1,
+            pitch: 59,
+            bearing: -34
+        }
+    },
+    {
+        id: "chelsea",
+        round: "37. runde",
+        matchLabel: "Chelsea - Tottenham",
+        stadium: "Stamford Bridge",
+        dateLabel: "S\u00f8ndag 17. mai 2026",
+        timeLabel: "16:00",
+        stadiumCopy: "Derbyet mot Chelsea betyr en kort, men tung tur tvers gjennom London.",
+        venue: [-0.1909, 51.4817],
+        camera: {
+            center: [-0.1909, 51.4817],
+            zoom: 15.05,
+            pitch: 58,
+            bearing: -18
+        }
+    },
+    {
+        id: "everton",
+        round: "38. runde",
+        matchLabel: "Tottenham - Everton",
+        stadium: "Tottenham Hotspur Stadium",
+        dateLabel: "S\u00f8ndag 24. mai 2026",
+        timeLabel: "17:00",
+        stadiumCopy: "Sesongen avsluttes hjemme i N17, p\u00e5 samme arena som Leeds-kampen uka f\u00f8r.",
+        venue: [-0.0664, 51.6042],
+        camera: {
+            center: [-0.0664, 51.6042],
+            zoom: 15.1,
+            pitch: 59,
+            bearing: -16
+        }
     }
-};
+];
 
-const flightPathFeature = {
-    type: "Feature",
-    properties: {},
-    geometry: {
-        type: "LineString",
-        coordinates: [
-            [4.42, 60.88],
-            [4.82, 60.69],
-            [5.12, 60.47],
-            lilleLungegardsvannCenter
-        ]
-    }
-};
-
-const replayButton = document.getElementById("replay-flight");
-const statusElement = document.getElementById("flight-status");
-const storyCaptionElement = document.getElementById("story-caption");
-const locationCardElement = document.getElementById("location-card");
-const chapterElements = Array.from(document.querySelectorAll(".chapter-step"));
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const narrativePhases = {
-    overview: {
-        status: "Viser Vestlandet ...",
-        caption: "Kameraet aapner bredt over Vestlandet for innflygingen starter.",
-        chapter: "overview",
-        locationVisible: false,
-        pathOpacity: 0.68
-    },
-    bergen: {
-        status: "Flyr inn mot Bergen ...",
-        caption: "Fortellingen smalner inn og leder blikket mot Bergen.",
-        chapter: "bergen",
-        locationVisible: false,
-        pathOpacity: 0.62
-    },
-    focus: {
-        status: "Lander ved Lille Lungegaardsvann ...",
-        caption: "Den siste bevegelsen snevrer inn mot vannspeilet midt i sentrum.",
-        chapter: "focus",
-        locationVisible: false,
-        pathOpacity: 0.36
-    },
-    landed: {
-        status: "Lille Lungegaardsvann markert",
-        caption: "Landingspunktet er vannspeilet i hjertet av Bergen sentrum.",
-        chapter: "focus",
-        locationVisible: true,
-        pathOpacity: 0.18
-    }
+const emptyRoute = {
+    type: "FeatureCollection",
+    features: []
 };
 
 const satelliteBaseStyle = {
@@ -119,14 +101,28 @@ const satelliteBaseStyle = {
     id: "satellite-style"
 };
 
+const playRouteButton = document.getElementById("play-route");
+const resetViewButton = document.getElementById("reset-view");
+const statusElement = document.getElementById("flight-status");
+const storyCaptionElement = document.getElementById("story-caption");
+const locationCardElement = document.getElementById("location-card");
+const locationKickerElement = document.getElementById("location-kicker");
+const locationTitleElement = document.getElementById("location-title");
+const locationSubtitleElement = document.getElementById("location-subtitle");
+const locationDetailElement = document.getElementById("location-detail");
+const fixtureButtons = Array.from(document.querySelectorAll(".fixture-button"));
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
+
 const map = new maplibregl.Map({
     container: "map",
     style: satelliteBaseStyle,
-    center: overviewCamera.center,
-    zoom: overviewCamera.zoom,
-    pitch: overviewCamera.pitch,
-    bearing: overviewCamera.bearing,
-    minZoom: 5.5,
+    center: bergenCamera.center,
+    zoom: bergenCamera.zoom,
+    pitch: bergenCamera.pitch,
+    bearing: bergenCamera.bearing,
+    minZoom: 4,
     maxZoom: 17,
     dragRotate: true,
     attributionControl: true,
@@ -135,236 +131,310 @@ const map = new maplibregl.Map({
 
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
 
-const markerElement = document.createElement("div");
-markerElement.className = "pulse-marker";
+const startMarkerElement = document.createElement("div");
+startMarkerElement.className = "start-marker";
 
-const lilleLungegardsvannMarker = new maplibregl.Marker({
-    element: markerElement,
+const bergenMarker = new maplibregl.Marker({
+    element: startMarkerElement,
     anchor: "center"
-}).setLngLat(lilleLungegardsvannCenter);
+}).setLngLat(bergenCamera.center);
 
-const lakePopup = new maplibregl.Popup({
+const activeMarkerElement = document.createElement("div");
+activeMarkerElement.className = "pulse-marker";
+
+const activeMarker = new maplibregl.Marker({
+    element: activeMarkerElement,
+    anchor: "center"
+});
+
+const stadiumPopup = new maplibregl.Popup({
     closeButton: false,
     closeOnClick: false,
-    offset: 16,
-    maxWidth: "260px"
-}).setLngLat(lilleLungegardsvannCenter)
-    .setHTML(
-        "<strong>Lille Lungeg\u00e5rdsvann</strong><p>Her kan historien eller grafikken din lande etter innflygingen.</p>"
-    );
+    offset: 18,
+    maxWidth: "280px"
+});
 
-let activeFlightId = 0;
-let preFlightTimeoutId = 0;
+let currentOrigin = [...bergenCamera.center];
+let activeJourneyToken = 0;
 let hasShownLoadError = false;
 
 function setStatus(message) {
     statusElement.textContent = message;
 }
 
-function setNarrativePhase(phaseKey) {
-    const phase = narrativePhases[phaseKey];
-    if (!phase) {
-        return;
-    }
-
-    setStatus(phase.status);
-    storyCaptionElement.textContent = phase.caption;
-
-    chapterElements.forEach((element) => {
-        element.classList.toggle("is-active", element.dataset.phase === phase.chapter);
+function setActiveFixtureButton(activeId) {
+    fixtureButtons.forEach((button) => {
+        const isActive = button.dataset.fixtureId === activeId;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
     });
-
-    locationCardElement.classList.toggle("is-visible", phase.locationVisible);
-    setFlightPathOpacity(phase.pathOpacity);
 }
 
-function hideHighlight() {
-    markerElement.classList.remove("is-visible");
-    lakePopup.remove();
-    locationCardElement.classList.remove("is-visible");
+function updateLocationCard({ kicker, title, subtitle, detail }) {
+    locationKickerElement.textContent = kicker;
+    locationTitleElement.textContent = title;
+    locationSubtitleElement.textContent = subtitle;
+    locationDetailElement.textContent = detail;
+    locationCardElement.classList.add("is-visible");
 }
 
-function showHighlight() {
-    if (!markerElement.parentElement) {
-        lilleLungegardsvannMarker.addTo(map);
-    }
-
-    markerElement.classList.add("is-visible");
-    lakePopup.addTo(map);
+function hideActiveVenue() {
+    activeMarkerElement.classList.remove("is-visible");
+    stadiumPopup.remove();
+    activeMarker.remove();
 }
 
-function addFlightLayers() {
-    if (map.getSource("story-flight-path")) {
+function showActiveVenue(fixture) {
+    activeMarker.setLngLat(fixture.venue).addTo(map);
+    activeMarkerElement.classList.add("is-visible");
+    stadiumPopup
+        .setLngLat(fixture.venue)
+        .setHTML(
+            "<strong>" + fixture.stadium + "</strong>" +
+            "<p>" + fixture.matchLabel + "<br>" + fixture.dateLabel + " kl. " + fixture.timeLabel + "</p>"
+        )
+        .addTo(map);
+}
+
+function sameCoordinate(a, b) {
+    return Math.abs(a[0] - b[0]) < 0.00001 && Math.abs(a[1] - b[1]) < 0.00001;
+}
+
+function setRoute(fromCoordinate, toCoordinate) {
+    const routeSource = map.getSource("active-route");
+    if (!routeSource) {
         return;
     }
 
-    map.addSource("story-flight-path", {
+    if (sameCoordinate(fromCoordinate, toCoordinate)) {
+        routeSource.setData(emptyRoute);
+        return;
+    }
+
+    routeSource.setData({
+        type: "FeatureCollection",
+        features: [
+            {
+                type: "Feature",
+                properties: {},
+                geometry: {
+                    type: "LineString",
+                    coordinates: [fromCoordinate, toCoordinate]
+                }
+            }
+        ]
+    });
+}
+
+function clearRoute() {
+    const routeSource = map.getSource("active-route");
+    if (!routeSource) {
+        return;
+    }
+
+    routeSource.setData(emptyRoute);
+}
+
+function addRouteLayers() {
+    if (map.getSource("active-route")) {
+        return;
+    }
+
+    map.addSource("active-route", {
         type: "geojson",
-        data: flightPathFeature
+        data: emptyRoute
     });
 
     map.addLayer({
-        id: "story-flight-path-glow",
+        id: "active-route-glow",
         type: "line",
-        source: "story-flight-path",
+        source: "active-route",
         layout: {
             "line-cap": "round",
             "line-join": "round"
         },
         paint: {
-            "line-color": "#8fe1ff",
+            "line-color": "#90e5ff",
             "line-width": [
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                6, 3,
-                12, 8
+                4, 2.5,
+                12, 7
             ],
-            "line-blur": 1.2,
-            "line-opacity": 0.2
+            "line-blur": 1.4,
+            "line-opacity": 0.22
         }
     });
 
     map.addLayer({
-        id: "story-flight-path-line",
+        id: "active-route-line",
         type: "line",
-        source: "story-flight-path",
+        source: "active-route",
         layout: {
             "line-cap": "round",
             "line-join": "round"
         },
         paint: {
-            "line-color": "#f2fbff",
+            "line-color": "#f4fbff",
             "line-width": [
                 "interpolate",
                 ["linear"],
                 ["zoom"],
-                6, 1.6,
+                4, 1.2,
                 12, 3.1
             ],
-            "line-dasharray": [2, 1.8],
-            "line-opacity": 0.54
+            "line-dasharray": [2.1, 1.7],
+            "line-opacity": 0.7
         }
     });
 }
 
-function setFlightPathOpacity(opacity) {
-    if (!map.getLayer("story-flight-path-line")) {
-        return;
-    }
+function moveCamera(camera, options = {}) {
+    const duration = reduceMotion ? 0 : (options.duration ?? 4200);
 
-    map.setPaintProperty("story-flight-path-line", "line-opacity", opacity);
-    map.setPaintProperty("story-flight-path-glow", "line-opacity", Math.min(opacity * 0.45, 0.24));
-}
-
-function addLakeLayers() {
-    if (map.getSource("lille-lungegardsvann")) {
-        return;
-    }
-
-    map.addSource("lille-lungegardsvann", {
-        type: "geojson",
-        data: lilleLungegardsvannOutline
-    });
-
-    map.addLayer({
-        id: "lille-lungegardsvann-fill",
-        type: "fill",
-        source: "lille-lungegardsvann",
-        paint: {
-            "fill-color": "#4cb3e2",
-            "fill-opacity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                8, 0.08,
-                12, 0.2,
-                15, 0.3
-            ]
-        }
-    });
-
-    map.addLayer({
-        id: "lille-lungegardsvann-line",
-        type: "line",
-        source: "lille-lungegardsvann",
-        paint: {
-            "line-color": "#0778b4",
-            "line-width": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                8, 1.2,
-                14, 3.2
-            ],
-            "line-opacity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                8, 0.28,
-                12, 0.7,
-                15, 0.95
-            ]
-        }
-    });
-}
-
-function runFlightSequence() {
-    const thisFlightId = ++activeFlightId;
-    const pauseBeforeTakeoff = reduceMotion ? 0 : 1200;
-    const approachDuration = reduceMotion ? 0 : 6200;
-    const landingDuration = reduceMotion ? 0 : 3600;
-
-    window.clearTimeout(preFlightTimeoutId);
-    map.stop();
-    hideHighlight();
-    setNarrativePhase("overview");
-    map.jumpTo(overviewCamera);
-
-    preFlightTimeoutId = window.setTimeout(() => {
-        if (thisFlightId !== activeFlightId) {
+    return new Promise((resolve) => {
+        if (duration === 0) {
+            map.jumpTo(camera);
+            resolve();
             return;
         }
 
-        setNarrativePhase("bergen");
+        map.once("moveend", resolve);
         map.flyTo({
-            ...bergenApproachCamera,
-            duration: approachDuration,
-            curve: 1.4,
-            speed: 0.46,
+            ...camera,
+            duration,
+            curve: options.curve ?? 1.35,
+            speed: options.speed ?? 0.48,
             essential: true
         });
+    });
+}
 
-        map.once("moveend", () => {
-            if (thisFlightId !== activeFlightId) {
-                return;
-            }
+function updateStartState() {
+    setActiveFixtureButton(null);
+    updateLocationCard({
+        kicker: "Startpunkt",
+        title: "Bergen",
+        subtitle: "Lille Lungeg\u00e5rdsvann og sentrum er utgangspunktet for ruta.",
+        detail: "Velg en kamp for \u00e5 f\u00e5 opp stadionnavnet Tottenham skal spille p\u00e5."
+    });
+    storyCaptionElement.textContent = "Startpunktet er Bergen. Velg en kamp for \u00e5 fly til neste stadion, eller spill hele ruta i ett.";
+    setStatus("Klar i Bergen ...");
+}
 
-            setNarrativePhase("focus");
-            map.easeTo({
-                ...bergenLandingCamera,
-                duration: landingDuration,
-                easing: (value) => 1 - Math.pow(1 - value, 3),
-                essential: true
-            });
+async function focusFixture(fixture, token, options = {}) {
+    if (token !== activeJourneyToken) {
+        return false;
+    }
 
-            map.once("moveend", () => {
-                if (thisFlightId !== activeFlightId) {
-                    return;
-                }
+    const origin = options.origin ?? currentOrigin;
+    setActiveFixtureButton(fixture.id);
+    setRoute(origin, fixture.venue);
+    hideActiveVenue();
+    setStatus("Flyr til " + fixture.stadium + " ...");
+    storyCaptionElement.textContent = fixture.matchLabel + " spilles " + fixture.dateLabel + " kl. " + fixture.timeLabel + ".";
 
-                showHighlight();
-                setNarrativePhase("landed");
-            });
+    await moveCamera(fixture.camera, {
+        duration: options.duration ?? 4700,
+        curve: 1.42,
+        speed: 0.45
+    });
+
+    if (token !== activeJourneyToken) {
+        return false;
+    }
+
+    showActiveVenue(fixture);
+    updateLocationCard({
+        kicker: "Stadion",
+        title: fixture.stadium,
+        subtitle: fixture.matchLabel + " \u00b7 " + fixture.round,
+        detail: fixture.dateLabel + " kl. " + fixture.timeLabel + ". " + fixture.stadiumCopy
+    });
+    setStatus(fixture.stadium + " markert");
+    currentOrigin = [...fixture.venue];
+    return true;
+}
+
+async function playRouteSequence() {
+    activeJourneyToken += 1;
+    const token = activeJourneyToken;
+
+    hideActiveVenue();
+    clearRoute();
+    setActiveFixtureButton(null);
+    setStatus("Starter ruta fra Bergen ...");
+    storyCaptionElement.textContent = "Tottenhams fire siste ligakamper spilles av i riktig rekkef\u00f8lge fra Bergen.";
+
+    await moveCamera(bergenCamera, {
+        duration: 2000,
+        curve: 1.2,
+        speed: 0.62
+    });
+
+    if (token !== activeJourneyToken) {
+        return;
+    }
+
+    currentOrigin = [...bergenCamera.center];
+    updateLocationCard({
+        kicker: "Startpunkt",
+        title: "Bergen",
+        subtitle: "Ruta starter ved Bergen sentrum for sesongens siste flyturer.",
+        detail: "F\u00f8rste stopp blir Villa Park i Birmingham."
+    });
+
+    for (const fixture of fixtures) {
+        const completed = await focusFixture(fixture, token, {
+            origin: currentOrigin,
+            duration: 4300
         });
-    }, pauseBeforeTakeoff);
+
+        if (!completed) {
+            return;
+        }
+
+        if (!reduceMotion) {
+            await new Promise((resolve) => window.setTimeout(resolve, 950));
+        }
+
+        if (token !== activeJourneyToken) {
+            return;
+        }
+    }
+
+    setStatus("Alle stadionene er markert");
+    storyCaptionElement.textContent = "Ruta har v\u00e6rt innom Villa Park, Tottenham Hotspur Stadium, Stamford Bridge og siste hjemmekamp i N17.";
+}
+
+async function goToBergen() {
+    activeJourneyToken += 1;
+    const token = activeJourneyToken;
+
+    setStatus("Flyr tilbake til Bergen ...");
+    hideActiveVenue();
+    clearRoute();
+    setActiveFixtureButton(null);
+
+    await moveCamera(bergenCamera, {
+        duration: 2400,
+        curve: 1.18,
+        speed: 0.58
+    });
+
+    if (token !== activeJourneyToken) {
+        return;
+    }
+
+    currentOrigin = [...bergenCamera.center];
+    updateStartState();
 }
 
 map.on("load", () => {
-    addFlightLayers();
-    addLakeLayers();
-    setNarrativePhase("overview");
-    runFlightSequence();
+    addRouteLayers();
+    bergenMarker.addTo(map);
+    updateStartState();
 });
 
 map.on("error", (event) => {
@@ -378,7 +448,7 @@ map.on("error", (event) => {
 
     if (window.location.protocol === "file:") {
         hasShownLoadError = true;
-        setStatus("Kartdata blir ofte blokkert i file://. Aapne via localhost.");
+        setStatus("Kartdata blir ofte blokkert i file://. Aapne via localhost eller GitHub Pages.");
         return;
     }
 
@@ -388,6 +458,23 @@ map.on("error", (event) => {
     }
 });
 
-replayButton.addEventListener("click", () => {
-    runFlightSequence();
+fixtureButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+        const fixture = fixtureById.get(button.dataset.fixtureId);
+        if (!fixture) {
+            return;
+        }
+
+        activeJourneyToken += 1;
+        const token = activeJourneyToken;
+        await focusFixture(fixture, token);
+    });
+});
+
+playRouteButton.addEventListener("click", () => {
+    playRouteSequence();
+});
+
+resetViewButton.addEventListener("click", () => {
+    goToBergen();
 });

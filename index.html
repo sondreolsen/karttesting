@@ -3,72 +3,76 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Vestlandet til Bergen</title>
+    <title>Bergen til Tottenhams siste stadioner</title>
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.17.0/dist/maplibre-gl.css">
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div id="map" aria-label="Kart over Vestlandet og Bergen"></div>
+    <div id="map" aria-label="Satellittkart fra Bergen til stadionene Tottenham skal spille p&aring;"></div>
     <div class="map-atmosphere" aria-hidden="true"></div>
 
     <div class="story-shell">
         <div class="story-card">
             <div class="story-topline">
-                <p class="eyebrow">Kartfortelling</p>
-                <p class="story-tag">Satellittprototype</p>
+                <p class="eyebrow">Tottenhams sesonginnspurt</p>
+                <p class="story-tag">Bergen til Premier League</p>
             </div>
-            <h1>Fra Vestlandet til Lille Lungeg&aring;rdsvann</h1>
+            <h1>Fra Bergen til Spurs&rsquo; siste stadioner</h1>
             <p class="lede">
-                Et oversiktskart &aring;pner p&aring; Vestlandet og flyr deretter inn til Bergen,
-                f&oslash;r turen lander ved Lille Lungeg&aring;rdsvann.
+                Kartet starter i Bergen og lar deg fly videre til arenaene der Tottenham
+                avslutter Premier League-sesongen.
             </p>
             <p class="story-note">
-                Opplevelsen er lagt opp som en kort visuell fortelling: bredt anslag,
-                innflyging langs kysten og en tydelig landing i sentrum.
+                Trykk p&aring; en kamp for &aring; fly til stadion og f&aring; opp arenanavnet.
+                Knappen <em>Spill hele ruta</em> g&aring;r gjennom kampene i riktig rekkef&oslash;lge.
             </p>
-            <div class="chapter-track" aria-label="Fortellingens steg">
-                <div class="chapter-step is-active" data-phase="overview">
-                    <span class="chapter-index">1</span>
-                    <div class="chapter-copy">
-                        <p class="chapter-title">Vestlandet</p>
-                        <p class="chapter-text">Kameraet &aring;pner bredt over fjorder, kyst og byb&aring;nd.</p>
-                    </div>
-                </div>
-                <div class="chapter-step" data-phase="bergen">
-                    <span class="chapter-index">2</span>
-                    <div class="chapter-copy">
-                        <p class="chapter-title">Inn mot Bergen</p>
-                        <p class="chapter-text">Fortellingen smalner inn og leder blikket mot Bergen.</p>
-                    </div>
-                </div>
-                <div class="chapter-step" data-phase="focus">
-                    <span class="chapter-index">3</span>
-                    <div class="chapter-copy">
-                        <p class="chapter-title">Landingspunkt</p>
-                        <p class="chapter-text">Historien avsluttes ved Lille Lungeg&aring;rdsvann.</p>
-                    </div>
-                </div>
-            </div>
-            <p id="story-caption" class="story-caption">
-                Kameraet &aring;pner bredt over Vestlandet f&oslash;r innflygingen starter.
-            </p>
+
             <div class="story-actions">
-                <button id="replay-flight" type="button">Spill av innflygingen</button>
-                <p id="flight-status" class="status-pill" aria-live="polite">Laster kartet ...</p>
+                <button id="play-route" class="primary-action" type="button">Spill hele ruta</button>
+                <button id="reset-view" class="ghost-action" type="button">Tilbake til Bergen</button>
+                <p id="flight-status" class="status-pill" aria-live="polite">Klar i Bergen ...</p>
             </div>
+
+            <div class="fixture-grid" aria-label="Tottenhams siste ligakamper">
+                <button class="fixture-button" data-fixture-id="villa" type="button" aria-pressed="false">
+                    <span class="fixture-round">35. runde</span>
+                    <strong>Aston Villa - Tottenham</strong>
+                    <span class="fixture-meta">S&oslash;ndag 3. mai 2026 &middot; 20:00</span>
+                </button>
+                <button class="fixture-button" data-fixture-id="leeds" type="button" aria-pressed="false">
+                    <span class="fixture-round">36. runde</span>
+                    <strong>Tottenham - Leeds United</strong>
+                    <span class="fixture-meta">Mandag 11. mai 2026 &middot; 21:00</span>
+                </button>
+                <button class="fixture-button" data-fixture-id="chelsea" type="button" aria-pressed="false">
+                    <span class="fixture-round">37. runde</span>
+                    <strong>Chelsea - Tottenham</strong>
+                    <span class="fixture-meta">S&oslash;ndag 17. mai 2026 &middot; 16:00</span>
+                </button>
+                <button class="fixture-button" data-fixture-id="everton" type="button" aria-pressed="false">
+                    <span class="fixture-round">38. runde</span>
+                    <strong>Tottenham - Everton</strong>
+                    <span class="fixture-meta">S&oslash;ndag 24. mai 2026 &middot; 17:00</span>
+                </button>
+            </div>
+
+            <p id="story-caption" class="story-caption">
+                Startpunktet er Bergen. Velg en kamp for &aring; fly til neste stadion, eller spill hele ruta i ett.
+            </p>
         </div>
     </div>
 
-    <div id="location-card" class="location-card" aria-live="polite">
-        <p class="location-kicker">Landingspunkt</p>
-        <h2>Lille Lungeg&aring;rdsvann</h2>
-        <p>Vannet i hjertet av Bergen blir siste stopp i innflygingen og det naturlige stedet &aring; la grafikken lande.</p>
+    <div id="location-card" class="location-card is-visible" aria-live="polite">
+        <p id="location-kicker" class="location-kicker">Startpunkt</p>
+        <h2 id="location-title">Bergen</h2>
+        <p id="location-subtitle" class="location-subtitle">Lille Lungeg&aring;rdsvann og sentrum er utgangspunktet for ruta.</p>
+        <p id="location-detail" class="location-detail">Trykk p&aring; en kampknapp for &aring; f&aring; opp stadionnavnet Tottenham skal spille p&aring;.</p>
     </div>
 
     <div class="map-note">
-        Basert p&aring; MapLibre GL JS og satellittbilder fra Sentinel-2 cloudless by EOX.
-        Hvis kartet ser tomt ut i `file://`-visning, &aring;pne siden via localhost i stedet.
+        Satellittbilder: Sentinel-2 cloudless by EOX. Kampdatoene er sjekket mot Tottenham Hotspur
+        og Premier League per 25. april 2026.
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@5.17.0/dist/maplibre-gl.js"></script>
