@@ -101,6 +101,8 @@ const satelliteBaseStyle = {
     id: "satellite-style"
 };
 
+const tileUrlTemplate = "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg";
+
 const playRouteButton = document.getElementById("play-route");
 const resetViewButton = document.getElementById("reset-view");
 const statusElement = document.getElementById("flight-status");
@@ -157,6 +159,7 @@ const stadiumPopup = new maplibregl.Popup({
 let currentOrigin = [...bergenCamera.center];
 let activeJourneyToken = 0;
 let hasShownLoadError = false;
+const tilePrefetchCache = new Set();
 
 function setStatus(message) {
     statusElement.textContent = message;
@@ -311,6 +314,79 @@ function moveCamera(camera, options = {}) {
     });
 }
 
+function lngLatToTile(lng, lat, zoom) {
+    const scale = Math.pow(2, zoom);
+    const x = Math.floor(((lng + 180) / 360) * scale);
+    const latRad = (lat * Math.PI) / 180;
+    const y = Math.floor(
+        ((1 - Math.log(Math.tan(latRad) + (1 / Math.cos(latRad))) / Math.PI) / 2) * scale
+    );
+
+    return { x, y };
+}
+
+function buildTileUrl(z, x, y) {
+    return tileUrlTemplate
+        .replace("{z}", String(z))
+        .replace("{x}", String(x))
+        .replace("{y}", String(y));
+}
+
+function prefetchTilesAround(coordinate, zoomLevels, radius = 1) {
+    zoomLevels.forEach((zoom) => {
+        const roundedZoom = Math.round(zoom);
+        const centerTile = lngLatToTile(coordinate[0], coordinate[1], roundedZoom);
+
+        for (let dx = -radius; dx <= radius; dx += 1) {
+            for (let dy = -radius; dy <= radius; dy += 1) {
+                const x = centerTile.x + dx;
+                const y = centerTile.y + dy;
+                const cacheKey = roundedZoom + ":" + x + ":" + y;
+
+                if (tilePrefetchCache.has(cacheKey)) {
+                    continue;
+                }
+
+                tilePrefetchCache.add(cacheKey);
+                const image = new Image();
+                image.decoding = "async";
+                image.loading = "eager";
+                image.src = buildTileUrl(roundedZoom, x, y);
+            }
+        }
+    });
+}
+
+function buildApproachCamera(targetCamera, origin) {
+    return {
+        center: [
+            (origin[0] + targetCamera.center[0]) / 2,
+            (origin[1] + targetCamera.center[1]) / 2
+        ],
+        zoom: Math.min(6.8, targetCamera.zoom - 6.2),
+        pitch: 32,
+        bearing: targetCamera.bearing * 0.35
+    };
+}
+
+async function transitionToFixtureCamera(fixture, origin, duration) {
+    const approachCamera = buildApproachCamera(fixture.camera, origin);
+
+    prefetchTilesAround(fixture.venue, [8, 10, 12, 13], 1);
+    await moveCamera(approachCamera, {
+        duration: Math.max(1600, Math.round(duration * 0.52)),
+        curve: 1.2,
+        speed: 0.56
+    });
+
+    prefetchTilesAround(fixture.venue, [13, 14], 1);
+    await moveCamera(fixture.camera, {
+        duration: Math.max(1600, Math.round(duration * 0.48)),
+        curve: 1.18,
+        speed: 0.52
+    });
+}
+
 function updateStartState() {
     setActiveFixtureButton(null);
     updateLocationCard({
@@ -335,11 +411,7 @@ async function focusFixture(fixture, token, options = {}) {
     setStatus("Flyr til " + fixture.stadium + " ...");
     storyCaptionElement.textContent = fixture.matchLabel + " spilles " + fixture.dateLabel + " kl. " + fixture.timeLabel + ".";
 
-    await moveCamera(fixture.camera, {
-        duration: options.duration ?? 4700,
-        curve: 1.42,
-        speed: 0.45
-    });
+    await transitionToFixtureCamera(fixture, origin, options.duration ?? 4700);
 
     if (token !== activeJourneyToken) {
         return false;
@@ -434,6 +506,10 @@ async function goToBergen() {
 map.on("load", () => {
     addRouteLayers();
     bergenMarker.addTo(map);
+    prefetchTilesAround(bergenCamera.center, [9, 11, 12], 1);
+    fixtures.forEach((fixture) => {
+        prefetchTilesAround(fixture.venue, [8, 10, 12], 1);
+    });
     updateStartState();
 });
 
