@@ -227,16 +227,6 @@ button:focus-visible {
     line-height: 1.34;
 }
 
-.story-caption {
-    margin: 1rem 0 0;
-    padding-top: 0.95rem;
-    min-height: 3.7rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-soft);
-    font-size: 1rem;
-    line-height: 1.55;
-}
-
 .location-card {
     position: fixed;
     top: 1.35rem;
@@ -392,10 +382,6 @@ button:focus-visible {
     h1 {
         font-size: clamp(1.85rem, 9vw, 2.8rem);
         max-width: 11ch;
-    }
-
-    .story-caption {
-        min-height: auto;
     }
 
     .location-card {

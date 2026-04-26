@@ -106,7 +106,6 @@ const tileUrlTemplate = "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3
 const playRouteButton = document.getElementById("play-route");
 const resetViewButton = document.getElementById("reset-view");
 const statusElement = document.getElementById("flight-status");
-const storyCaptionElement = document.getElementById("story-caption");
 const locationCardElement = document.getElementById("location-card");
 const locationKickerElement = document.getElementById("location-kicker");
 const locationTitleElement = document.getElementById("location-title");
@@ -395,7 +394,6 @@ function updateStartState() {
         subtitle: "Lille Lungeg\u00e5rdsvann og sentrum er utgangspunktet for ruta.",
         detail: "Velg en kamp for \u00e5 f\u00e5 opp stadionnavnet Tottenham skal spille p\u00e5."
     });
-    storyCaptionElement.textContent = "Startpunktet er Bergen. Velg en kamp for \u00e5 fly til neste stadion, eller spill hele ruta i ett.";
     setStatus("Klar i Bergen ...");
 }
 
@@ -409,8 +407,6 @@ async function focusFixture(fixture, token, options = {}) {
     setRoute(origin, fixture.venue);
     hideActiveVenue();
     setStatus("Flyr til " + fixture.stadium + " ...");
-    storyCaptionElement.textContent = fixture.matchLabel + " spilles " + fixture.dateLabel + " kl. " + fixture.timeLabel + ".";
-
     await transitionToFixtureCamera(fixture, origin, options.duration ?? 4700);
 
     if (token !== activeJourneyToken) {
@@ -437,8 +433,6 @@ async function playRouteSequence() {
     clearRoute();
     setActiveFixtureButton(null);
     setStatus("Starter ruta fra Bergen ...");
-    storyCaptionElement.textContent = "Tottenhams fire siste ligakamper spilles av i riktig rekkef\u00f8lge fra Bergen.";
-
     await moveCamera(bergenCamera, {
         duration: 2000,
         curve: 1.2,
@@ -477,7 +471,6 @@ async function playRouteSequence() {
     }
 
     setStatus("Alle stadionene er markert");
-    storyCaptionElement.textContent = "Ruta har v\u00e6rt innom Villa Park, Tottenham Hotspur Stadium, Stamford Bridge og siste hjemmekamp i N17.";
 }
 
 async function goToBergen() {
